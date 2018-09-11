@@ -1,0 +1,116 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace lesson1_A
+{/// <summary>
+/// 
+/// </summary>
+    class Logger
+    {
+        Action<string> logMethods;
+        public void AddLogMethod(Action<string> newLogMethod)
+        {
+            logMethods += newLogMethod;
+        }
+
+        public void LogThis(string msg)
+        {
+            logMethods?.Invoke($"[{DateTime.Now.ToLongTimeString()}] {msg}");
+        }
+
+        List<string> entries;
+        public Logger()
+        {
+            entries = new List<string>();
+            AddLogMethod(msg => entries.Add(msg));
+            //AddLogMethod(entries.Add);
+        }
+        //Predicate<string> delegate bool xxx(string s);
+        //Func<string,bool> delegate bool xxx(string s);
+        //LINQ = Language Integrated Queries
+        //Extension Methods 
+
+        //public List<string> Filter(Func<string, bool> condition)
+        // IEnumerable<T>.Where(Func<T, bool> condition)
+
+        //IEnumerable<T>.OrderBy(Func<T, IComparable> orderbyExtractor);
+
+        //arrayOfStudents.Where(student=>student.Name == "Bill").OrderBy(student=>student.Ects);
+        //listofint.Where(x=>x>1000 && x%2==0).Orderby(xxx);
+        public List<string> Filter(Func<string, bool> condition)
+        {
+            if (condition == null)
+            {
+                //throw new ArgumentNullException(); The same
+                throw new ArgumentNullException(nameof(condition));
+            }
+
+            return entries.Where(condition).ToList();
+        }
+
+       /* public List<string> Filter(Predicate<string> condition)
+        {
+            if(condition == null)
+            {
+                //throw new ArgumentNullException(); The same
+                throw new ArgumentNullException(nameof(condition));
+            }
+
+
+            return entries.FindAll(condition);
+
+            List<string> output = new List<string>();
+            foreach (string entry in entries)
+            {
+                if(condition(entry)) output.Add(entry);
+                //if (condition(entry.Invoke())) output.Add(entry); The same, just look better
+            }
+            return output;
+        }*/
+    }
+}
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Threading;
+
+namespace lesson1_A
+{
+    class Program
+    {
+        static void ConsoleLog(string s)
+        {
+            Console.WriteLine($"[CONSOLE] {s}");
+        }
+        static void Main(string[] args)
+        {
+            Logger log = new Logger();
+            log.AddLogMethod(ConsoleLog);
+            log.AddLogMethod(delegate (string s) { Console.WriteLine($"[ANON] {s}"); });
+            log.AddLogMethod(s => Console.WriteLine($"[LAMDA] {s}"));
+
+            //log.LogThis("Hello, delegates");
+
+            log.LogThis("Apache started..."); Thread.Sleep(1000);
+            log.LogThis("Mysql started..."); Thread.Sleep(1000);
+            log.LogThis("Exim started..."); Thread.Sleep(1000);
+            log.LogThis("Pureftpd started..."); Thread.Sleep(1000);
+            log.LogThis("Influxdb started..."); Thread.Sleep(1000);
+            log.LogThis("Google started..."); Thread.Sleep(1000);
+            log.LogThis("Git started..."); Thread.Sleep(1000);
+            log.LogThis("Docker started..."); Thread.Sleep(1000);
+
+            List<string> filtered = log.Filter(entry => entry.ToLower().Contains("apache"));
+            foreach (string s in filtered) Console.WriteLine(s);
+
+            Console.ReadLine();
+
+      
+        }
+    }
+}
